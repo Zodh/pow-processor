@@ -35,16 +35,24 @@ public class PowProcessor extends Thread {
           powValue -> {
             var finalTime = LocalDateTime.now().plus(time, ChronoUnit.MILLIS);
             var shouldRun = powValue.getTimeGather().getShouldRun();
-            if (Boolean.TRUE.equals(shouldRun)){
-              while (LocalDateTime.now().isBefore(finalTime)) {
-                if (powValue.getPowTimes() == 0) {
-                  powValue.getTimeGather().getTimeSpentInMillis();
-                  powValue.setPowTimes(powValue.getPowTimes() - 1);
+            try {
+              if (Boolean.TRUE.equals(shouldRun)) {
+                powValue.getTimeGather().setCount(true);
+                while (LocalDateTime.now().isBefore(finalTime)) {
+                  if (powValue.getPowTimes() == 0) {
+                    powValue.getTimeGather().getTimeSpentInMillis();
+                    powValue.setPowTimes(powValue.getPowTimes() - 1);
+                  }
+                  if (powValue.getPowTimes() > 0) {
+                    powValue.setActualValue(
+                        Math.pow(powValue.getActualValue(), powValue.getPowTimes()));
+                    powValue.setPowTimes(powValue.getPowTimes() - 1);
+                  }
                 }
-                if (powValue.getPowTimes() > 0) {
-                  powValue.setActualValue(Math.pow(powValue.getActualValue(), powValue.getPowTimes()));
-                  powValue.setPowTimes(powValue.getPowTimes() - 1);
-                }
+              }
+            } finally {
+              if (Boolean.TRUE.equals(powValue.getTimeGather().getCount())) {
+                powValue.getTimeGather().setCount(false);
               }
             }
           }

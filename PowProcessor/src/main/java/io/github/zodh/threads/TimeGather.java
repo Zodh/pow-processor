@@ -3,6 +3,7 @@ package io.github.zodh.threads;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import lombok.Getter;
+import lombok.Setter;
 
 public class TimeGather extends Thread {
 
@@ -11,6 +12,10 @@ public class TimeGather extends Thread {
   private final LocalDateTime initialTime;
 
   private LocalDateTime finalTime;
+
+  @Setter
+  @Getter
+  private Boolean count = false;
 
   @Getter
   private Boolean shouldRun = true;
@@ -24,18 +29,19 @@ public class TimeGather extends Thread {
   @Override
   public void run() {
     while (Boolean.TRUE.equals(this.shouldRun)) {
-      try {
-        this.finalTime = LocalDateTime.now();
-      } catch (Exception exception) {
-        this.interrupt();
+      if (Boolean.TRUE.equals(count)) {
+        try {
+          this.finalTime = LocalDateTime.now();
+        } catch (Exception exception) {
+          this.interrupt();
+        }
       }
     }
   }
 
-  public void getTimeSpentInMillis(){
+  public void getTimeSpentInMillis() {
     this.shouldRun = false;
     var timeSpent = ChronoUnit.MILLIS.between(this.initialTime, this.finalTime);
     System.out.println(this.identifier + " - " + timeSpent + "ms");
   }
-
 }

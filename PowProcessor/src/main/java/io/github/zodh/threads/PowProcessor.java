@@ -11,6 +11,8 @@ public class PowProcessor extends Thread {
 
   private final List<BasePowValue> powValues;
 
+  private LocalDateTime initAccumulateCount;
+
   public PowProcessor(List<BasePowValue> powValues, Integer quantum) {
     this.powValues = powValues;
     this.quantum = quantum;
@@ -33,27 +35,21 @@ public class PowProcessor extends Thread {
     ) {
       powValues.forEach(
           powValue -> {
-            var finalTime = LocalDateTime.now().plus(time, ChronoUnit.MILLIS);
-            var shouldRun = powValue.getTimeGather().getShouldRun();
-            try {
-              if (Boolean.TRUE.equals(shouldRun)) {
-                powValue.getTimeGather().setCount(true);
-                while (LocalDateTime.now().isBefore(finalTime)) {
-                  if (powValue.getPowTimes() == 0) {
-                    powValue.getTimeGather().getTimeSpentInMillis();
-                    powValue.setPowTimes(powValue.getPowTimes() - 1);
-                  }
-                  if (powValue.getPowTimes() > 0) {
-                    powValue.setActualValue(
-                        Math.pow(powValue.getActualValue(), powValue.getPowTimes()));
-                    powValue.setPowTimes(powValue.getPowTimes() - 1);
-                  }
+            if (Boolean.TRUE.equals(powValue.getTimeGather().getShouldRun())) {
+              initAccumulateCount = LocalDateTime.now();
+              var finalTime = LocalDateTime.now().plus(time, ChronoUnit.MILLIS);
+              while (LocalDateTime.now().isBefore(finalTime)) {
+                if (powValue.getPowTimes() == 0) {
+                  powValue.getTimeGather().getTimeSpentInMillis();
+                  powValue.setPowTimes(powValue.getPowTimes() - 1);
+                }
+                if (powValue.getPowTimes() > 0) {
+                  powValue.setActualValue(
+                      Math.pow(powValue.getActualValue(), powValue.getPowTimes()));
+                  powValue.setPowTimes(powValue.getPowTimes() - 1);
                 }
               }
-            } finally {
-              if (Boolean.TRUE.equals(powValue.getTimeGather().getCount())) {
-                powValue.getTimeGather().setCount(false);
-              }
+              powValue.getTimeGather().accumulateTime(initAccumulateCount);
             }
           }
       );

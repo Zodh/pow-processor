@@ -15,7 +15,7 @@ public class Application {
     var timeGatherForSecondPow = new TimeGather("P2");
     var timeGatherForThirdPow = new TimeGather("P3");
 
-    var quantum = 1000;
+    var quantum = 1;
 
     var powValues = new ArrayList<BasePowValue>();
     powValues.add(new FirstPow(timeGatherForFirstPow));

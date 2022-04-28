@@ -9,39 +9,25 @@ public class TimeGather extends Thread {
 
   private final String identifier;
 
-  private final LocalDateTime initialTime;
+  private Long timeSpent;
 
-  private LocalDateTime finalTime;
+  private LocalDateTime lastUpdatedTime;
 
   @Setter
-  @Getter
-  private Boolean count = false;
-
   @Getter
   private Boolean shouldRun = true;
 
   public TimeGather(String identifier) {
     this.identifier = identifier;
-    this.initialTime = LocalDateTime.now();
     start();
   }
 
-  @Override
-  public void run() {
-    while (Boolean.TRUE.equals(this.shouldRun)) {
-      if (Boolean.TRUE.equals(count)) {
-        try {
-          this.finalTime = LocalDateTime.now();
-        } catch (Exception exception) {
-          this.interrupt();
-        }
-      }
-    }
+  public void accumulateTime(LocalDateTime initAccumulateCount) {
+    timeSpent += ChronoUnit.MILLIS.between(initAccumulateCount, LocalDateTime.now());
   }
 
   public void getTimeSpentInMillis() {
-    this.shouldRun = false;
-    var timeSpent = ChronoUnit.MILLIS.between(this.initialTime, this.finalTime);
+    this.setShouldRun(false);
     System.out.println(this.identifier + " - " + timeSpent + "ms");
   }
 }

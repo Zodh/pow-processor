@@ -3,31 +3,41 @@ package io.github.zodh.threads;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import lombok.Getter;
-import lombok.Setter;
 
 public class TimeGather extends Thread {
 
-  private final String identifier;
 
-  private Long timeSpent;
+  private final LocalDateTime startDateTime;
 
-  private LocalDateTime lastUpdatedTime;
+  private final LocalDateTime endDateTime;
 
-  @Setter
-  @Getter
-  private Boolean shouldRun = true;
+  private final Process process;
 
-  public TimeGather(String identifier) {
-    this.identifier = identifier;
+  public TimeGather(Process process, Integer quantum) {
+    this.process = process;
+    if (process.getActualValue() == 0) {
+      process.setActualValue(process.getPotentiationValue());
+    }
+    this.startDateTime = LocalDateTime.now();
+    this.endDateTime = this.startDateTime.plus(quantum, ChronoUnit.MILLIS);
     start();
   }
 
-  public void accumulateTime(LocalDateTime initAccumulateCount) {
-    timeSpent += ChronoUnit.MILLIS.between(initAccumulateCount, LocalDateTime.now());
+  @Override
+  public void run() {
+    while (LocalDateTime.now().isBefore(endDateTime)) {
+      if (process.getRemainingProcesses() > 0) {
+        process.setIntegrity(process.getIntegrity() + 1);
+        process.setActualValue(process.getActualValue() * process.getPotentiationValue());
+        process.setRemainingProcesses(process.getRemainingProcesses() - 1);
+      }
+    }
+    this.interrupt();
   }
 
-  public void getTimeSpentInMillis() {
-    this.setShouldRun(false);
-    System.out.println(this.identifier + " - " + timeSpent + "ms");
+  public Process retrieveProcess() {
+    Long tempoDecorrido = ChronoUnit.MILLIS.between(startDateTime, endDateTime);
+    process.setTimeInMs(process.getTimeInMs() + tempoDecorrido.intValue());
+    return process;
   }
 }

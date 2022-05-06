@@ -1,59 +1,61 @@
 package io.github.zodh.threads;
 
-import io.github.zodh.model.vo.BasePowValue;
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 
-public class PowProcessor extends Thread {
+public class PowProcessor {
 
-  private final Integer quantum;
+  public static void main(String[] args) {
+    System.out.println(LocalDateTime.now());
+    final Integer quantum = 1;
 
-  private final List<BasePowValue> powValues;
+    // Lembre-se que:
+    // potentiationValue = base
+    // remainingProcesses = (número de vezes que o cálculo de potênciação acontecerá)
+    // exemplo: new Process(2.0, 2.0) = 2 * 2 * 2 = 8
+    // exemplo: new Process(2.0, 1.0) = 2 * 2 = 4
+    var processOne = new Process(2.0, 1000.0);
+    var processTwo = new Process(3.0, 2000.0);
+    var processThree = new Process(5.0, 10_000_000.0);
 
-  private LocalDateTime initAccumulateCount;
+    var listOfProccesses = new ArrayList<>(List.of(processOne, processTwo, processThree));
+    var listOfValues = new ArrayList<ProcessValueAndTime>();
 
-  public PowProcessor(List<BasePowValue> powValues, Integer quantum) {
-    this.powValues = powValues;
-    this.quantum = quantum;
-    start();
-  }
-
-  @Override
-  public void run() {
-    processPotencies(this.quantum);
-  }
-
-  private void processPotencies(Integer time) {
-    var p1 = 0;
-    var p2 = 1;
-    var p3 = 2;
-    while (
-        powValues.get(p1).getTimeGather().getShouldRun().equals(Boolean.TRUE)
-            || powValues.get(p2).getTimeGather().getShouldRun().equals(Boolean.TRUE)
-            || powValues.get(p3).getTimeGather().getShouldRun().equals(Boolean.TRUE)
-    ) {
-      powValues.forEach(
-          powValue -> {
-            if (Boolean.TRUE.equals(powValue.getTimeGather().getShouldRun())) {
-              initAccumulateCount = LocalDateTime.now();
-              var finalTime = LocalDateTime.now().plus(time, ChronoUnit.MILLIS);
-              while (LocalDateTime.now().isBefore(finalTime)) {
-                if (powValue.getPowTimes() == 0) {
-                  powValue.getTimeGather().getTimeSpentInMillis();
-                  powValue.setPowTimes(powValue.getPowTimes() - 1);
+    while(listOfValues.size() != 3){
+        listOfProccesses.forEach(
+            process -> {
+              try {
+                if (process.getRemainingProcesses() == -1) {
+                  var newProcessValueAndTime = new ProcessValueAndTime(
+                      process.getPotentiationValue(),
+                      process.getTimeInMs(),
+                      process.getIntegrity(),
+                      process.getActualValue()
+                  );
+                  System.err.println(newProcessValueAndTime);
+                  listOfValues.add(newProcessValueAndTime);
+                  process.setRemainingProcesses(-2.0);
+                } else {
+                  if (process.getRemainingProcesses() == 0) {
+                    process.setRemainingProcesses(-1.0);
+                  } else if (process.getRemainingProcesses() > 0){
+                    var timeGather = new TimeGather(process, quantum);
+                    Thread.sleep(quantum);
+                    process = timeGather.retrieveProcess();
+                    timeGather.stop();
+                    timeGather.interrupt();
+                  }
                 }
-                if (powValue.getPowTimes() > 0) {
-                  powValue.setActualValue(
-                      Math.pow(powValue.getActualValue(), powValue.getPowTimes()));
-                  powValue.setPowTimes(powValue.getPowTimes() - 1);
-                }
+              } catch (Exception exception) {
+                System.out.println("Error: " + exception.getMessage());
               }
-              powValue.getTimeGather().accumulateTime(initAccumulateCount);
             }
-          }
-      );
+        );
+
     }
+    System.out.println(LocalDateTime.now());
   }
+
 
 }

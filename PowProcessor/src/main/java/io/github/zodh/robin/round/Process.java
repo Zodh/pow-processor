@@ -1,8 +1,8 @@
-package io.github.zodh.threads;
+package io.github.zodh.robin.round;
 
 public class Process {
 
-  private Double potentiationValue;
+  private final Double potentiationValue;
 
   private Double remainingProcesses;
 
@@ -10,14 +10,11 @@ public class Process {
 
   private Integer timeInMs;
 
-  private Double actualValue;
-
   public Process(Double potentiationValue, Double remainingProcesses) {
     this.potentiationValue = potentiationValue;
     this.remainingProcesses = remainingProcesses;
     this.integrity = 0;
     this.timeInMs = 0;
-    this.actualValue = 0.0;
   }
 
   public Double getPotentiationValue() {
@@ -28,31 +25,30 @@ public class Process {
     return remainingProcesses;
   }
 
-  public Integer getTimeInMs() {
-    return timeInMs;
-  }
-
-  public Integer getIntegrity() {
-    return integrity;
-  }
-
   public void setRemainingProcesses(Double remainingProcesses) {
     this.remainingProcesses = remainingProcesses;
+  }
+
+  public Integer getTimeInMs() {
+    return timeInMs;
   }
 
   public void setTimeInMs(Integer timeInMs) {
     this.timeInMs = timeInMs;
   }
 
+  public Integer getIntegrity() {
+    return integrity;
+  }
+
   public void setIntegrity(Integer integrity) {
     this.integrity = integrity;
   }
 
-  public Double getActualValue() {
-    return actualValue;
-  }
-
-  public void setActualValue(Double actualValue) {
-    this.actualValue = actualValue;
+  @Override
+  public String toString() {
+    return "ProcessValueAndTime - value = " + potentiationValue
+        + ", timeInMs = " + timeInMs
+        + ", integrity = " + integrity;
   }
 }
